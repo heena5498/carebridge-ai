@@ -44,7 +44,8 @@ CareBridge AI is a care-transition workspace for elderly discharge patients. The
 •⁠  ⁠Example:
   ```env
   gemini_api_key=your_gemini_api_key_here
-  REACT_APP_GEMINI_API_KEY=your_gemini_api_key_here```
+  REACT_APP_GEMINI_API_KEY=your_gemini_api_key_here
+  ```
 
 ## Prerequisites
 
