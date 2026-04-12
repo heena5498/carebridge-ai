@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.models.user import User
+from app.services.case_service import link_patient_cases
 
 
 def get_user_by_email(db: Session, email: str) -> User | None:
@@ -27,6 +28,9 @@ def register_user(db: Session, full_name: str, email: str, password: str, role: 
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    if user.role == "patient":
+        link_patient_cases(db, user)
 
     token = create_access_token(str(user.id))
     return {"access_token": token, "token_type": "bearer", "user": user}

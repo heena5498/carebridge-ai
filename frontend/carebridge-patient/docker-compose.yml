@@ -1,0 +1,13 @@
+services:
+  carebridge-patient:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Reads REACT_APP_GEMINI_API_KEY from your .env file at build time
+        REACT_APP_GEMINI_API_KEY: ${REACT_APP_GEMINI_API_KEY}
+    image: carebridge-patient:latest
+    container_name: carebridge-patient
+    ports:
+      - "3000:80"
+    restart: unless-stopped

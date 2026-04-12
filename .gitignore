@@ -1,3 +1,10 @@
+# ── Root node_modules (stray install at repo root) ────────────────────────────
+node_modules/
+
+# ── Frontend: carebridge-facility ─────────────────────────────────────────────
+frontend/carebridge-facility/node_modules/
+frontend/carebridge-facility/dist/
+
 # ── Frontend: carebridge-patient ──────────────────────────────────────────────
 
 # Dependencies

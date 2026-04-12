@@ -12,6 +12,32 @@ from app.services.case_service import create_case, get_all_cases, get_case, upda
 router = APIRouter(prefix="/cases", tags=["cases"])
 
 
+def _extract_case_metrics(case):
+    extraction = case.extraction_data or {}
+    care_plan = case.care_plan_data or {}
+
+    active_meds = care_plan.get("active_medications_count")
+    med_conflicts = care_plan.get("med_conflicts_count")
+    missing_items = care_plan.get("missing_items_count")
+    follow_ups_due = care_plan.get("follow_ups_due_count")
+
+    if active_meds is None:
+        active_meds = len(care_plan.get("medications_schedule", []))
+    if med_conflicts is None:
+        med_conflicts = len(care_plan.get("med_conflicts", []))
+    if missing_items is None:
+        missing_items = len(care_plan.get("missing_items", [])) or len(extraction.get("missing_information", []))
+    if follow_ups_due is None:
+        follow_ups_due = len(care_plan.get("follow_up_reminders", []))
+
+    return {
+        "active_medications_count": int(active_meds or 0),
+        "med_conflicts_count": int(med_conflicts or 0),
+        "missing_items_count": int(missing_items or 0),
+        "follow_ups_due_count": int(follow_ups_due or 0),
+    }
+
+
 @router.post("", response_model=PatientCaseResponse, status_code=201)
 def create(
     body: PatientCaseCreate,
@@ -25,6 +51,7 @@ def create(
         age=body.age,
         source_hospital=body.source_hospital,
         discharge_date=body.discharge_date,
+        patient_email=body.patient_email,
     )
     return case
 
@@ -39,13 +66,16 @@ def list_cases(
     summaries = []
     for case in cases:
         extraction = case.extraction_data or {}
+        metrics = _extract_case_metrics(case)
         summaries.append(PatientCaseSummary(
             id=case.id,
             patient_name=case.patient_name,
             status=case.status,
             risk_score=extraction.get("overall_confidence"),
-            missing_items_count=len(extraction.get("missing_information", [])),
-            med_conflicts_count=0,
+            active_medications_count=metrics["active_medications_count"],
+            missing_items_count=metrics["missing_items_count"],
+            med_conflicts_count=metrics["med_conflicts_count"],
+            follow_ups_due_count=metrics["follow_ups_due_count"],
             updated_at=case.updated_at,
         ))
     return summaries

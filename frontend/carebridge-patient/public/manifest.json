@@ -1,0 +1,15 @@
+{
+  "short_name": "CareBridge",
+  "name": "CareBridge — Patient Care Portal",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1B5E3B",
+  "background_color": "#FDF6EC"
+}
