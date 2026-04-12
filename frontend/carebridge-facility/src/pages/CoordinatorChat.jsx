@@ -1,38 +1,131 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import facilityMockData from "../data/facilityMockData";
+import { sendChatMessage, clearChatSession } from "../api/chat";
+import { fetchCases } from "../api/cases";
 
 export default function CoordinatorChat() {
-    const [messages, setMessages] = useState(facilityMockData.chat.messages);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const urlCaseId = searchParams.get("case_id")
+        ? Number(searchParams.get("case_id"))
+        : null;
+
+    const [selectedCaseId, setSelectedCaseId] = useState(urlCaseId);
+    const [cases, setCases] = useState([]);
+    const [casesLoading, setCasesLoading] = useState(true);
+
+    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
+    const [sessionId, setSessionId] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const scrollRef = useRef(null);
 
-    function sendMessage(customText) {
-        const text = (customText ?? input).trim();
-        if (!text) return;
+    // Load case list for the dropdown
+    useEffect(() => {
+        fetchCases()
+            .then((data) => setCases(data))
+            .catch(() => setCases([]))
+            .finally(() => setCasesLoading(false));
+    }, []);
 
-        const userMessage = {
-            role: "user",
-            text,
-        };
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages, loading]);
 
-        const assistantMessage = {
-            role: "assistant",
-            text:
-                "This is a frontend prototype response. Later you can connect this to your backend /api/chat endpoint so the answer comes from Agent 5 with real document-grounded citations.",
-            sources: ["Agent 5 mock response", "Facility mock dataset"],
-            highlight:
-                "Use this area for proactive warnings from Medication Safety or Missing Info agents when relevant.",
-        };
+    const handleClear = useCallback(async () => {
+        if (sessionId) {
+            try {
+                await clearChatSession(sessionId);
+            } catch {
+                // ignore — session may already be gone server-side
+            }
+        }
+        setMessages([]);
+        setSessionId(null);
+        setError(null);
+    }, [sessionId]);
 
-        setMessages((prev) => [...prev, userMessage, assistantMessage]);
-        setInput("");
+    async function handleCaseChange(e) {
+        const val = e.target.value;
+        const newCaseId = val ? Number(val) : null;
+        setSelectedCaseId(newCaseId);
+
+        if (newCaseId) {
+            setSearchParams({ case_id: newCaseId });
+        } else {
+            setSearchParams({});
+        }
+
+        // Await the clear so state is fully reset before user interacts again
+        await handleClear();
     }
+
+    async function sendMessage(customText) {
+        const text = (customText ?? input).trim();
+        if (!text || loading) return;
+
+        // Add user message immediately for responsiveness
+        const userMsg = { role: "user", text };
+        setMessages((prev) => [...prev, userMsg]);
+        setInput("");
+        setError(null);
+        setLoading(true);
+
+        try {
+            const payload = { message: text };
+            if (sessionId) payload.session_id = sessionId;
+            if (selectedCaseId) payload.case_id = selectedCaseId;
+
+            const data = await sendChatMessage(payload);
+
+            setSessionId(data.session_id);
+            setMessages((prev) => [
+                ...prev,
+                { role: "assistant", text: data.reply },
+            ]);
+        } catch (err) {
+            const detail =
+                err.response?.data?.detail || err.message || "Something went wrong";
+            setError(detail);
+            // Remove the optimistic user message since it wasn't processed
+            setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last && last.role === "user" && last.text === text) {
+                    return prev.slice(0, -1);
+                }
+                return prev;
+            });
+            // Restore the input so the user can retry
+            setInput(text);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const selectedCase = cases.find((c) => c.id === selectedCaseId);
+
+    const suggestions = selectedCaseId
+        ? [
+              "Summarize this patient's case",
+              "What medications are prescribed?",
+              "Are there any high risks?",
+              "What follow-ups are scheduled?",
+          ]
+        : [
+              "How do I create a new care plan?",
+              "What is the intake workflow?",
+          ];
 
     return (
         <div className="page-shell">
             <div className="container">
                 <Navbar />
 
+                {/* Header */}
                 <div
                     style={{
                         marginBottom: "20px",
@@ -46,91 +139,90 @@ export default function CoordinatorChat() {
                     <div>
                         <h1 className="section-title">Coordinator chat</h1>
                         <p className="section-subtitle">
-                            Real-time Q&A grounded in the discharge document and all five agent
-                            outputs
+                            AI assistant grounded in patient case data
                         </p>
                     </div>
 
-                    <span
-                        style={{
-                            background: "var(--primary-light)",
-                            color: "var(--primary)",
-                            padding: "5px 12px",
-                            borderRadius: "999px",
-                            fontSize: "11px",
-                            fontWeight: 500,
-                        }}
+                    <button
+                        onClick={handleClear}
+                        className="outline-btn"
+                        style={{ fontSize: "12px", padding: "6px 12px" }}
+                        disabled={loading}
                     >
-            Grounded
-          </span>
+                        Clear chat
+                    </button>
                 </div>
 
-                <div className="card" style={{ padding: "14px", marginBottom: "16px" }}>
-                    <div
+                {/* Patient selector */}
+                <div
+                    className="card"
+                    style={{
+                        padding: "14px",
+                        marginBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        flexWrap: "wrap",
+                    }}
+                >
+                    <label
                         style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "12px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "var(--text-primary)",
+                            whiteSpace: "nowrap",
                         }}
                     >
-                        <div
-                            style={{
-                                width: "42px",
-                                height: "48px",
-                                borderRadius: "6px",
-                                border: "0.5px solid var(--border)",
-                                background: "var(--border-light)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "11px",
-                                fontWeight: 500,
-                                color: "var(--text-muted)",
-                                flexShrink: 0,
-                            }}
-                        >
-                            PDF
-                        </div>
-
-                        <div style={{ flex: 1 }}>
-                            <p
-                                style={{
-                                    margin: "0 0 2px",
-                                    fontSize: "13px",
-                                    fontWeight: 500,
-                                    color: "var(--text-primary)",
-                                }}
-                            >
-                                {facilityMockData.chat.contextTitle}
-                            </p>
-                            <p
-                                style={{
-                                    margin: 0,
-                                    fontSize: "11px",
-                                    color: "var(--text-muted)",
-                                }}
-                            >
-                                {facilityMockData.chat.contextMeta}
-                            </p>
-                        </div>
-
+                        Patient context:
+                    </label>
+                    <select
+                        value={selectedCaseId ?? ""}
+                        onChange={handleCaseChange}
+                        disabled={casesLoading || loading}
+                        style={{
+                            flex: 1,
+                            minWidth: "200px",
+                            padding: "9px 12px",
+                            border: "0.5px solid var(--border)",
+                            borderRadius: "10px",
+                            background: "var(--bg-white)",
+                            color: "var(--text-primary)",
+                            fontSize: "13px",
+                            outline: "none",
+                            opacity: loading ? 0.6 : 1,
+                        }}
+                    >
+                        <option value="">
+                            {casesLoading
+                                ? "Loading patients..."
+                                : "No patient selected (general chat)"}
+                        </option>
+                        {cases.map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.patient_name} — {c.status.replace(/_/g, " ")}
+                            </option>
+                        ))}
+                    </select>
+                    {selectedCase && (
                         <span
                             style={{
                                 background: "var(--primary-light)",
                                 color: "var(--primary)",
-                                padding: "4px 10px",
+                                padding: "5px 12px",
                                 borderRadius: "999px",
-                                fontSize: "10px",
+                                fontSize: "11px",
                                 fontWeight: 500,
                             }}
                         >
-              Grounded
-            </span>
-                    </div>
+                            Case #{selectedCaseId}
+                        </span>
+                    )}
                 </div>
 
+                {/* Messages area */}
                 <div className="card" style={{ padding: "16px", marginBottom: "14px" }}>
                     <div
+                        ref={scrollRef}
                         style={{
                             display: "flex",
                             flexDirection: "column",
@@ -140,6 +232,21 @@ export default function CoordinatorChat() {
                             paddingRight: "4px",
                         }}
                     >
+                        {messages.length === 0 && !loading && (
+                            <p
+                                style={{
+                                    textAlign: "center",
+                                    color: "var(--text-muted)",
+                                    fontSize: "13px",
+                                    padding: "40px 0",
+                                }}
+                            >
+                                {selectedCaseId
+                                    ? `Ask anything about ${selectedCase?.patient_name || "this patient"}`
+                                    : "Select a patient above for case-aware chat, or ask a general question"}
+                            </p>
+                        )}
+
                         {messages.map((message, index) => {
                             if (message.role === "user") {
                                 return (
@@ -209,114 +316,129 @@ export default function CoordinatorChat() {
                                                     fontSize: "13px",
                                                     lineHeight: 1.6,
                                                     color: "var(--text-primary)",
+                                                    whiteSpace: "pre-wrap",
                                                 }}
                                             >
                                                 {message.text}
                                             </p>
-
-                                            {message.highlight && (
-                                                <div
-                                                    style={{
-                                                        marginTop: "10px",
-                                                        background: "var(--status-attention-bg)",
-                                                        border: "0.5px solid #FDE68A",
-                                                        borderRadius: "10px",
-                                                        padding: "8px 10px",
-                                                    }}
-                                                >
-                                                    <p
-                                                        style={{
-                                                            margin: "0 0 4px",
-                                                            fontSize: "11px",
-                                                            fontWeight: 500,
-                                                            color: "var(--status-attention-text)",
-                                                        }}
-                                                    >
-                                                        ! Note from Med Safety agent
-                                                    </p>
-                                                    <p
-                                                        style={{
-                                                            margin: 0,
-                                                            fontSize: "12px",
-                                                            lineHeight: 1.5,
-                                                            color: "#78350F",
-                                                        }}
-                                                    >
-                                                        {message.highlight}
-                                                    </p>
-                                                </div>
-                                            )}
                                         </div>
-
-                                        {message.sources && (
-                                            <div
-                                                style={{
-                                                    display: "flex",
-                                                    gap: "6px",
-                                                    flexWrap: "wrap",
-                                                    marginTop: "6px",
-                                                }}
-                                            >
-                                                {message.sources.map((source, sourceIndex) => (
-                                                    <span
-                                                        key={sourceIndex}
-                                                        style={{
-                                                            background: "#F5F0E5",
-                                                            color: "var(--text-muted)",
-                                                            padding: "4px 8px",
-                                                            borderRadius: "999px",
-                                                            fontSize: "10px",
-                                                        }}
-                                                    >
-                            {source}
-                          </span>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        <p
-                                            style={{
-                                                margin: "4px 0 0",
-                                                fontSize: "10px",
-                                                color: "var(--text-faint)",
-                                            }}
-                                        >
-                                            Just now
-                                        </p>
                                     </div>
                                 </div>
                             );
                         })}
+
+                        {loading && (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: "30px",
+                                        height: "30px",
+                                        borderRadius: "50%",
+                                        background: "var(--primary-light)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        color: "var(--primary)",
+                                        fontSize: "12px",
+                                        fontWeight: 700,
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    CB
+                                </div>
+                                <div
+                                    style={{
+                                        background: "var(--bg-white)",
+                                        border: "0.5px solid var(--border)",
+                                        borderRadius: "4px 14px 14px 14px",
+                                        padding: "12px 14px",
+                                        fontSize: "13px",
+                                        color: "var(--text-muted)",
+                                    }}
+                                >
+                                    Thinking...
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div
-                    style={{
-                        display: "flex",
-                        gap: "8px",
-                        flexWrap: "wrap",
-                        marginBottom: "14px",
-                    }}
-                >
-                    {facilityMockData.chat.suggestions.map((item) => (
+                {/* Error banner */}
+                {error && (
+                    <div
+                        style={{
+                            background: "#FEF2F2",
+                            border: "1px solid #FECACA",
+                            borderRadius: "10px",
+                            padding: "10px 14px",
+                            marginBottom: "14px",
+                            fontSize: "12px",
+                            color: "#991B1B",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: "8px",
+                        }}
+                    >
+                        <span>{error}</span>
                         <button
-                            key={item}
-                            onClick={() => sendMessage(item)}
+                            onClick={() => setError(null)}
                             style={{
-                                background: "var(--bg-white)",
-                                border: "0.5px solid var(--border)",
-                                color: "var(--primary)",
-                                padding: "7px 12px",
-                                borderRadius: "999px",
-                                fontSize: "12px",
-                                fontWeight: 500,
+                                background: "none",
+                                border: "none",
+                                color: "#991B1B",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                fontWeight: 700,
+                                padding: "0 4px",
+                                flexShrink: 0,
                             }}
                         >
-                            {item}
+                            x
                         </button>
-                    ))}
-                </div>
+                    </div>
+                )}
 
+                {/* Suggestion chips */}
+                {messages.length === 0 && (
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: "8px",
+                            flexWrap: "wrap",
+                            marginBottom: "14px",
+                        }}
+                    >
+                        {suggestions.map((item) => (
+                            <button
+                                key={item}
+                                onClick={() => sendMessage(item)}
+                                disabled={loading}
+                                style={{
+                                    background: "var(--bg-white)",
+                                    border: "0.5px solid var(--border)",
+                                    color: "var(--primary)",
+                                    padding: "7px 12px",
+                                    borderRadius: "999px",
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    opacity: loading ? 0.5 : 1,
+                                }}
+                            >
+                                {item}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Input area */}
                 <div className="card" style={{ padding: "12px" }}>
                     <div
                         style={{
@@ -330,9 +452,14 @@ export default function CoordinatorChat() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") sendMessage();
+                                if (e.key === "Enter" && !e.shiftKey) sendMessage();
                             }}
-                            placeholder="Ask about this patient's discharge..."
+                            placeholder={
+                                selectedCaseId
+                                    ? `Ask about ${selectedCase?.patient_name || "this patient"}...`
+                                    : "Ask a question..."
+                            }
+                            disabled={loading}
                             style={{
                                 flex: 1,
                                 border: "0.5px solid var(--border)",
@@ -341,11 +468,13 @@ export default function CoordinatorChat() {
                                 background: "var(--bg-white)",
                                 color: "var(--text-primary)",
                                 outline: "none",
+                                opacity: loading ? 0.6 : 1,
                             }}
                         />
 
                         <button
                             onClick={() => sendMessage()}
+                            disabled={loading || !input.trim()}
                             style={{
                                 width: "42px",
                                 height: "42px",
@@ -355,6 +484,11 @@ export default function CoordinatorChat() {
                                 color: "white",
                                 fontSize: "16px",
                                 flexShrink: 0,
+                                cursor:
+                                    loading || !input.trim()
+                                        ? "not-allowed"
+                                        : "pointer",
+                                opacity: loading || !input.trim() ? 0.5 : 1,
                             }}
                         >
                             ↑

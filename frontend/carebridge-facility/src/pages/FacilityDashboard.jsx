@@ -527,6 +527,13 @@ export default function FacilityDashboard() {
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <button
+                            onClick={() => navigate(`/facility/chat?case_id=${caseId}`)}
+                            className="outline-btn"
+                            style={{ fontSize: 13 }}
+                        >
+                            Chat
+                        </button>
                         {approved ? (
                             <span style={{ background: "var(--status-normal-bg)", color: "var(--status-normal-text)", padding: "8px 16px", borderRadius: 999, fontSize: 13, fontWeight: 600 }}>
                                 ✓ Approved
