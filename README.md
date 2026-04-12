@@ -2,6 +2,13 @@
 
 CareBridge AI is a care-transition workspace for elderly discharge patients. The backend ingests discharge documents, extracts structured case data, runs validation checks, and supports nurse review plus care-plan generation. The repository also includes a facility-facing React app and a patient-facing React app.
 
+## Reference
+
+1.⁠ ⁠App is hosted via Railway - https://frontend-production-6953.up.railway.app/
+2.⁠ ⁠⁠Go Daddy Domain - www.carebridgeai.vip
+3.⁠ ⁠⁠Deployment repo - forked - https://github.com/vineetagarwal54/carebridge-ai
+4.⁠ ⁠⁠Demo Video - https://www.youtube.com/watch?v=heq0dZvnv8A
+
 ## Stack
 
 - Backend: FastAPI, SQLAlchemy, Alembic, PostgreSQL, Python 3.11+
@@ -9,16 +16,33 @@ CareBridge AI is a care-transition workspace for elderly discharge patients. The
 - Patient frontend: React, Create React App, Gemini API
 - Local infra: Docker and Docker Compose
 
-## Compliance
+## AI Agents Used
 
-CareBridge AI handles protected health information (PHI) and is built with the following frameworks in mind:
+•⁠  ⁠*Medication Safety Agent*  
+  Reconciles discharge medications with prior regimens, flags duplicate therapies, harmful interactions, and missed dosage changes.
 
-- **HIPAA** — PHI is stored with JWT-based access controls. Data in transit must be served over HTTPS/TLS in production. A Business Associate Agreement (BAA) is required with your hosting provider.
-- **HITECH** — Electronic discharge records processed by this system fall under HITECH scope. All case state transitions are tracked via the case management API for audit purposes.
-- **GDPR** — If handling EU patient data, deploy within an EU data region and establish a Data Processing Agreement (DPA) with your provider. No third-party trackers are embedded in the frontends.
-- **SOC 2** — Designed to run on SOC 2-compliant infrastructure. Formal certification is the operator's responsibility.
+•⁠  ⁠*Follow-Up Risk Agent*  
+  Identifies patients at risk of missing follow-up visits and triggers reminders, outreach, and escalation workflows.
 
-> Compliance certification for a production deployment is the responsibility of the organisation operating the system.
+•⁠  ⁠*Patient Summary Agent*  
+  Converts long discharge notes and patient records into short, actionable summaries for care teams.
+
+•⁠  ⁠*Normalization Agent*  
+  Standardizes fragmented records, notes, and discharge documents into a unified care view.
+
+•⁠  ⁠*Review Decision Agent*  
+  Helps care coordinators quickly assess patient risk and decide the next best action.
+
+## Gemini API Integration
+
+•⁠  ⁠*Gemini API is used for AI-powered extraction and patient-facing intelligent features.*
+•⁠  ⁠Backend requires a ⁠ gemini_api_key ⁠ in the root ⁠ .env ⁠ file for extraction services to run properly.  [oai_citation:0‡GitHub](https://github.com/heena5498/carebridge-ai/blob/main/README.md)
+•⁠  ⁠Patient frontend uses a Gemini key at build/runtime.  [oai_citation:1‡GitHub](https://github.com/heena5498/carebridge-ai/blob/main/README.md)
+•⁠  ⁠For Docker builds of the patient app, pass the key as ⁠ REACT_APP_GEMINI_API_KEY ⁠.  [oai_citation:2‡GitHub](https://github.com/heena5498/carebridge-ai/blob/main/README.md)
+•⁠  ⁠Example:
+  ```env
+  gemini_api_key=your_gemini_api_key_here
+  REACT_APP_GEMINI_API_KEY=your_gemini_api_key_here```
 
 ## Prerequisites
 
@@ -152,3 +176,15 @@ If you use the Docker stack, open `http://localhost:5050` and sign in with the v
 - Username: `carebridge_user`
 - Password: `carebridge_pass`
 - Database: `carebridge_db`
+
+## Compliance
+
+CareBridge AI handles protected health information (PHI) and is built with the following frameworks in mind:
+
+- **HIPAA** — PHI is stored with JWT-based access controls. Data in transit must be served over HTTPS/TLS in production. A Business Associate Agreement (BAA) is required with your hosting provider.
+- **HITECH** — Electronic discharge records processed by this system fall under HITECH scope. All case state transitions are tracked via the case management API for audit purposes.
+- **GDPR** — If handling EU patient data, deploy within an EU data region and establish a Data Processing Agreement (DPA) with your provider. No third-party trackers are embedded in the frontends.
+- **SOC 2** — Designed to run on SOC 2-compliant infrastructure. Formal certification is the operator's responsibility.
+
+> Compliance certification for a production deployment is the responsibility of the organisation operating the system.
+
