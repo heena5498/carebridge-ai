@@ -10,7 +10,10 @@ CareBridge AI is a care-transition workspace for elderly discharge patients. The
 2. Go Daddy Domain - www.carebridgeai.vip
 3. Deployment repo - forked - https://github.com/vineetagarwal54/carebridge-ai
 4. Demo Video - https://www.youtube.com/watch?v=heq0dZvnv8A
-5. System Architecture - [system_architecture.html](system_architecture.html)
+
+## System Architecture
+
+View the interactive system architecture diagram: [system_architecture.html](system_architecture.html)
 
 ## Stack
 
