@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { carePlans, activePlans, pastPlans } from "../../data/patientData";
 import StatCard from "../StatCard";
 import CarePlanCard from "../CarePlanCard";
 import DetailPanel from "../DetailPanel";
@@ -20,13 +19,21 @@ function SectionLabel({ text, badge, badgeStyle }) {
   );
 }
 
-const missingCount = carePlans
-  .filter((p) => p.status === "active")
-  .flatMap((p) => p.followups)
-  .filter((f) => f.status === "missing").length;
-
-export default function CarePlansTab() {
+export default function CarePlansTab({
+  carePlans = [],
+  activePlans = [],
+  pastPlans = [],
+  activeMedicationCount = 0,
+  medConflictCount = 0,
+  missingItemsCount = 0,
+  followUpsDueCount = 0,
+}) {
   const [selectedId, setSelectedId] = useState(null);
+
+  const missingCount = carePlans
+    .filter((p) => p.status === "active")
+    .flatMap((p) => p.followups)
+    .filter((f) => f.status === "missing").length;
 
   const handleCardClick = (id) => {
     setSelectedId((prev) => (prev === id ? null : id));
@@ -67,6 +74,13 @@ export default function CarePlansTab() {
         <p className="mt-0.5" style={{ fontSize: "13px", color: "#7A6B52" }}>
           All hospital stays and ongoing care on record
         </p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatCard number={activeMedicationCount} label="Active medications" />
+        <StatCard number={medConflictCount} label="Med conflicts" numberColor="#991B1B" />
+        <StatCard number={missingItemsCount} label="Missing items" numberColor="#92400E" />
+        <StatCard number={followUpsDueCount} label="Follow-ups due" numberColor="#1E40AF" />
       </div>
 
       <div className="flex gap-3 mb-6">

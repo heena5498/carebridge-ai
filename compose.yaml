@@ -60,6 +60,19 @@ services:
     networks:
       - carebridge_network
 
+  patient_frontend:
+    build:
+      context: ./frontend/carebridge-patient
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_GEMINI_API_KEY: ${REACT_APP_GEMINI_API_KEY}
+    container_name: carebridge_patient_frontend
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    networks:
+      - carebridge_network
+
 volumes:
   postgres_data:
 

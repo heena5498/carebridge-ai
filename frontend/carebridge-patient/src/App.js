@@ -1,10 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import PatientHome from "./pages/PatientHome";
 
 function PrivateRoute({ children }) {
-  const user = localStorage.getItem("carebridge_user");
-  return user ? children : <Navigate to="/login" replace />;
+  const token = localStorage.getItem("carebridge_access_token");
+  return token ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/home"
           element={
@@ -23,7 +25,7 @@ export default function App() {
         <Route
           path="/"
           element={
-            localStorage.getItem("carebridge_user")
+            localStorage.getItem("carebridge_access_token")
               ? <Navigate to="/home" replace />
               : <Navigate to="/login" replace />
           }

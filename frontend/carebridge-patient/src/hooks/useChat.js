@@ -1,14 +1,13 @@
 import { useState, useCallback } from "react";
-import { aiContext } from "../data/patientData";
-
-const SYSTEM_PROMPT = `You are CareBridge AI, a warm and compassionate health assistant helping a patient named Margaret Williams understand her hospital discharge records and care plans. Speak in simple, plain language — like a knowledgeable friend, not a doctor. Keep answers to 2-3 short paragraphs maximum. Never diagnose conditions, never prescribe treatments, never contradict a doctor's instructions. Always encourage the patient to check with their care team for anything serious. You have access to the following patient care context: ${aiContext}`;
 
 const GEMINI_MODEL = "gemini-2.0-flash";
 
-export default function useChat() {
+export default function useChat(aiContext = "No care-plan context available.") {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const systemPrompt = `You are CareBridge AI, a warm and compassionate health assistant helping a patient understand their hospital discharge records and care plans. Speak in simple, plain language like a knowledgeable friend, not a doctor. Keep answers to 2-3 short paragraphs maximum. Never diagnose conditions, never prescribe treatments, never contradict a doctor's instructions. Always encourage the patient to check with their care team for anything serious. You have access to the following patient care context: ${aiContext}`;
 
   const sendMessage = useCallback(async (text) => {
     if (!text.trim() || loading) return;
@@ -35,7 +34,7 @@ export default function useChat() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            system_instruction: { parts: [{ text: systemPrompt }] },
             contents: geminiContents,
             generationConfig: { maxOutputTokens: 500 },
           }),
@@ -61,7 +60,7 @@ export default function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [messages, loading]);
+  }, [messages, loading, systemPrompt]);
 
   return { messages, loading, error, sendMessage };
 }

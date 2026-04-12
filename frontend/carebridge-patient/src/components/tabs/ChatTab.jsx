@@ -67,8 +67,8 @@ function Message({ msg }) {
   );
 }
 
-export default function ChatTab() {
-  const { messages, loading, sendMessage } = useChat();
+export default function ChatTab({ aiContext = "" }) {
+  const { messages, loading, sendMessage } = useChat(aiContext);
   const [input, setInput] = useState("");
   const [hasSent, setHasSent] = useState(false);
   const bottomRef = useRef(null);

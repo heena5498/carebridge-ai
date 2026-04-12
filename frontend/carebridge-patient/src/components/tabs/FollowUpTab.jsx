@@ -1,12 +1,4 @@
-import { carePlans } from "../../data/patientData";
 import FollowUpItem from "../FollowUpItem";
-
-const allFollowups = carePlans.flatMap((plan) =>
-  plan.followups.map((f) => ({ ...f, planCondition: plan.condition }))
-);
-const notScheduled = allFollowups.filter((f) => f.status === "missing");
-const upcoming = allFollowups.filter((f) => f.status === "pending");
-const completed = allFollowups.filter((f) => f.status === "done");
 
 function SummaryStat({ count, label, bg, color }) {
   return (
@@ -43,7 +35,14 @@ function ItemCard({ item, opacity = 1 }) {
   );
 }
 
-export default function FollowUpTab() {
+export default function FollowUpTab({ carePlans = [] }) {
+  const allFollowups = carePlans.flatMap((plan) =>
+    plan.followups.map((f) => ({ ...f, planCondition: plan.condition }))
+  );
+  const notScheduled = allFollowups.filter((f) => f.status === "missing");
+  const upcoming = allFollowups.filter((f) => f.status === "pending");
+  const completed = allFollowups.filter((f) => f.status === "done");
+
   return (
     <div className="p-5 max-w-4xl mx-auto">
       <div className="mb-5">

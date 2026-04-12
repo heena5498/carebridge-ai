@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { loginPatient } from "../api/auth";
 
 function Logo() {
   return (
@@ -17,23 +19,21 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      if (email === "margaret@carebridge.com" && password === "password123") {
-        localStorage.setItem(
-          "carebridge_user",
-          JSON.stringify({ name: "Margaret Williams", email })
-        );
-        navigate("/home");
-      } else {
-        setError("Invalid email or password. Please try again.");
-      }
+    try {
+      const data = await loginPatient(email, password);
+      localStorage.setItem("carebridge_access_token", data.access_token);
+      localStorage.setItem("carebridge_user", JSON.stringify(data.user));
+      navigate("/home");
+    } catch (err) {
+      setError(err.message || "Invalid email or password. Please try again.");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   const inputStyle = {
@@ -128,7 +128,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center mt-6" style={{ fontSize: "11px", color: "#A39880" }}>
-          Demo credentials: margaret@carebridge.com / password123
+          Don't have an account? <Link to="/register" style={{ color: "#1B5E3B" }}>Register</Link>
         </p>
       </div>
     </div>

@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_current_facility_user
 from app.db.database import get_db
+from app.db.models.user import User
 from app.schemas.extraction import ExtractionResult
 from app.services.case_service import get_case, update_case
 from app.services.gemini_service import extract_from_pdf
@@ -12,7 +14,11 @@ router = APIRouter(prefix="/cases/{case_id}", tags=["extraction"])
 
 
 @router.post("/extract", response_model=ExtractionResult)
-async def extract_case(case_id: int, db: Session = Depends(get_db)):
+async def extract_case(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_facility_user),
+):
     """
     Full extraction pipeline:
     1. Send PDF to Gemini for structured extraction

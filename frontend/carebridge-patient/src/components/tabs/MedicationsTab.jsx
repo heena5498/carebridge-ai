@@ -1,4 +1,3 @@
-import { carePlans } from "../../data/patientData";
 import MedicationRow from "../MedicationRow";
 import StatusBadge from "../StatusBadge";
 
@@ -8,7 +7,7 @@ const GROUP_STATUS = {
   inactive: "inactive",
 };
 
-export default function MedicationsTab() {
+export default function MedicationsTab({ carePlans = [] }) {
   return (
     <div className="p-5 max-w-4xl mx-auto">
       <div className="mb-5">

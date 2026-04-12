@@ -3,8 +3,10 @@ import os
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_current_facility_user
 from app.db.database import get_db
 from app.db.models.document import Document
+from app.db.models.user import User
 from app.schemas.case import DocumentResponse
 from app.services.case_service import get_case
 
@@ -18,6 +20,7 @@ async def upload_document(
     case_id: int,
     db: Session = Depends(get_db),
     file: UploadFile = File(...),
+    current_user: User = Depends(get_current_facility_user),
 ):
     """Nurse uploads a discharge PDF for this case."""
     case = get_case(db, case_id)

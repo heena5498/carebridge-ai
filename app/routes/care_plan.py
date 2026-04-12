@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_current_facility_user
 from app.db.database import get_db
+from app.db.models.user import User
 from app.schemas.care_plan import CarePlanResponse
 from app.schemas.extraction import ExtractionResult
 from app.services.case_service import get_case, update_case
@@ -12,7 +14,11 @@ router = APIRouter(prefix="/cases/{case_id}/care-plan", tags=["care_plan"])
 
 
 @router.post("/generate", response_model=CarePlanResponse)
-async def generate(case_id: int, db: Session = Depends(get_db)):
+async def generate(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_facility_user),
+):
     """Generate a patient-friendly care plan from approved extraction."""
     case = get_case(db, case_id)
 
@@ -37,7 +43,11 @@ async def generate(case_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=CarePlanResponse)
-def get_care_plan(case_id: int, db: Session = Depends(get_db)):
+def get_care_plan(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_facility_user),
+):
     """Retrieve the generated care plan."""
     case = get_case(db, case_id)
 

@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_current_facility_user
 from app.db.database import get_db
+from app.db.models.user import User
 from app.schemas.review import NurseReviewPayload, ReviewUpdate
 from app.schemas.extraction import ExtractionResult
 from app.services.case_service import get_case, update_case
@@ -11,7 +13,11 @@ router = APIRouter(prefix="/cases/{case_id}", tags=["review"])
 
 
 @router.get("/review", response_model=NurseReviewPayload)
-def get_review(case_id: int, db: Session = Depends(get_db)):
+def get_review(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_facility_user),
+):
     """Build and return the nurse review payload from extraction data."""
     case = get_case(db, case_id)
 
@@ -28,7 +34,12 @@ def get_review(case_id: int, db: Session = Depends(get_db)):
 
 
 @router.patch("/review", response_model=NurseReviewPayload)
-def update_review(case_id: int, body: ReviewUpdate, db: Session = Depends(get_db)):
+def update_review(
+    case_id: int,
+    body: ReviewUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_facility_user),
+):
     """Nurse edits extracted data (allergies, meds, follow-ups, etc.)."""
     case = get_case(db, case_id)
 
@@ -66,7 +77,11 @@ def update_review(case_id: int, body: ReviewUpdate, db: Session = Depends(get_db
 
 
 @router.post("/approve", response_model=dict)
-def approve_case(case_id: int, db: Session = Depends(get_db)):
+def approve_case(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_facility_user),
+):
     """Nurse approves the review — case moves to approved status."""
     case = get_case(db, case_id)
 

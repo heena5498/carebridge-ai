@@ -40,3 +40,15 @@ class CarePlanResponse(BaseModel):
     follow_up_reminders: list[FollowUpReminder] = []
     monitoring_tasks: list[CarePlanTask] = []
     warning_signs: list[str] = []
+    active_medications_count: int = 0
+    med_conflicts_count: int = 0
+    missing_items_count: int = 0
+    follow_ups_due_count: int = 0
+    med_conflicts: list[str] = []
+    missing_items: list[str] = []
+    active_medications_count: int = 0
+    med_conflicts_count: int = 0
+    missing_items_count: int = 0
+    follow_ups_due_count: int = 0
+    medication_conflicts: list[str] = []
+    missing_items: list[str] = []

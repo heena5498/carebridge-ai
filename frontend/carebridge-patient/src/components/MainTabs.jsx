@@ -1,19 +1,17 @@
-import { missingFollowUpCount } from "../data/patientData";
+export default function MainTabs({ activeTab, onTabChange, missingFollowUpCount = 0 }) {
+  const tabs = [
+    { id: "careplans", label: "My care plans" },
+    { id: "medications", label: "My medications" },
+    { id: "followup", label: "Follow-up plan", badge: missingFollowUpCount },
+    { id: "chat", label: "Ask CareBridge" },
+  ];
 
-const TABS = [
-  { id: "careplans", label: "My care plans" },
-  { id: "medications", label: "My medications" },
-  { id: "followup", label: "Follow-up plan", badge: missingFollowUpCount },
-  { id: "chat", label: "Ask CareBridge" },
-];
-
-export default function MainTabs({ activeTab, onTabChange }) {
   return (
     <div
       className="bg-white flex sticky z-40 overflow-x-auto"
       style={{ top: "57px", borderBottom: "1px solid #E0D5C0" }}
     >
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
           <button

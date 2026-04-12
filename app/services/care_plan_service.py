@@ -74,6 +74,12 @@ async def generate_care_plan(case_id: int, extraction: ExtractionResult) -> Care
         TimelineBucket(label="Day 3-7", tasks=bucket_map["day_3_to_7"]),
     ]
 
+    med_conflicts = [
+        risk for risk in extraction.risks
+        if "med" in risk.category.lower() and risk.severity.lower() in {"high", "critical"}
+    ]
+    missing_items = [f"{item.field_name}: {item.reason}" for item in extraction.missing_information]
+
     return CarePlanResponse(
         case_id=case_id,
         generated_at=datetime.utcnow(),
@@ -82,4 +88,10 @@ async def generate_care_plan(case_id: int, extraction: ExtractionResult) -> Care
         follow_up_reminders=reminders,
         monitoring_tasks=monitoring,
         warning_signs=extraction.warning_signs,
+        active_medications_count=len(med_schedule),
+        med_conflicts_count=len(med_conflicts),
+        missing_items_count=len(extraction.missing_information),
+        follow_ups_due_count=len(reminders),
+        med_conflicts=[risk.description for risk in med_conflicts],
+        missing_items=missing_items,
     )

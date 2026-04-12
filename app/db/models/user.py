@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
@@ -27,3 +27,8 @@ class User(Base):
         onupdate=func.now(),
         nullable=False,
     )
+
+    cases: Mapped[list["PatientCase"]] = relationship(back_populates="patient_user")
+
+
+from app.db.models.patient_case import PatientCase  # noqa: E402
