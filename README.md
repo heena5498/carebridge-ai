@@ -10,6 +10,7 @@ CareBridge AI is a care-transition workspace for elderly discharge patients. The
 2.⁠ ⁠⁠Go Daddy Domain - www.carebridgeai.vip
 3.⁠ ⁠⁠Deployment repo - forked - https://github.com/vineetagarwal54/carebridge-ai
 4.⁠ ⁠⁠Demo Video - https://www.youtube.com/watch?v=heq0dZvnv8A
+5.⁠ ⁠⁠System Architecture - [system_architecture.html](system_architecture.html)
 
 ## Stack
 
@@ -37,15 +38,16 @@ CareBridge AI is a care-transition workspace for elderly discharge patients. The
 
 ## Gemini API Integration
 
-•⁠  ⁠*Gemini API is used for AI-powered extraction and patient-facing intelligent features.*
-•⁠  ⁠Backend requires a ⁠ gemini_api_key ⁠ in the root ⁠ .env ⁠ file for extraction services to run properly.  [oai_citation:0‡GitHub](https://github.com/heena5498/carebridge-ai/blob/main/README.md)
-•⁠  ⁠Patient frontend uses a Gemini key at build/runtime.  [oai_citation:1‡GitHub](https://github.com/heena5498/carebridge-ai/blob/main/README.md)
-•⁠  ⁠For Docker builds of the patient app, pass the key as ⁠ REACT_APP_GEMINI_API_KEY ⁠.  [oai_citation:2‡GitHub](https://github.com/heena5498/carebridge-ai/blob/main/README.md)
-•⁠  ⁠Example:
+•​  ​*Gemini API is used for AI-powered extraction and patient-facing intelligent features.*
+•​  ​Backend requires a ​ gemini_api_key ​ in the root ​ .env ​ file for extraction services to run properly.
+•​  ​Patient frontend uses a Gemini key at build/runtime.
+•​  ​For Docker builds of the patient app, pass the key as ​ REACT_APP_GEMINI_API_KEY ​.
+•​  ​Example:
   ```env
   gemini_api_key=your_gemini_api_key_here
   REACT_APP_GEMINI_API_KEY=your_gemini_api_key_here
   ```
+
 
 ## Prerequisites
 
