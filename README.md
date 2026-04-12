@@ -1,4 +1,4 @@
-# CareBridge AI — v1.1.0
+# CareBridge AI
 
 CareBridge AI is a care-transition workspace for elderly discharge patients. The backend ingests discharge documents, extracts structured case data, runs validation checks, and supports nurse review plus care-plan generation. The repository also includes a facility-facing React app and a patient-facing React app.
 
@@ -8,6 +8,17 @@ CareBridge AI is a care-transition workspace for elderly discharge patients. The
 - Facility frontend: Vite, React, React Router
 - Patient frontend: React, Create React App, Gemini API
 - Local infra: Docker and Docker Compose
+
+## Compliance
+
+CareBridge AI handles protected health information (PHI) and is built with the following frameworks in mind:
+
+- **HIPAA** — PHI is stored with JWT-based access controls. Data in transit must be served over HTTPS/TLS in production. A Business Associate Agreement (BAA) is required with your hosting provider.
+- **HITECH** — Electronic discharge records processed by this system fall under HITECH scope. All case state transitions are tracked via the case management API for audit purposes.
+- **GDPR** — If handling EU patient data, deploy within an EU data region and establish a Data Processing Agreement (DPA) with your provider. No third-party trackers are embedded in the frontends.
+- **SOC 2** — Designed to run on SOC 2-compliant infrastructure. Formal certification is the operator's responsibility.
+
+> Compliance certification for a production deployment is the responsibility of the organisation operating the system.
 
 ## Prerequisites
 
