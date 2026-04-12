@@ -13,7 +13,7 @@ CareBridge AI is a care-transition workspace for elderly discharge patients. The
 
 ## System Architecture
 
-View the interactive system architecture diagram: [System Architecture](https://htmlpreview.github.io/?https://github.com/heena5498/carebridge-ai/blob/main/system_architecture.html)
+View the system architecture diagram: [System Architecture](https://htmlpreview.github.io/?https://github.com/heena5498/carebridge-ai/blob/main/system_architecture.html)
 
 ## Stack
 
