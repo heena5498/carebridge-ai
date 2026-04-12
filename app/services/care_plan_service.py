@@ -4,7 +4,7 @@ Transforms approved extraction data into a patient-friendly care plan
 organized by timeline buckets and task categories.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app.schemas.extraction import ExtractionResult
 from app.schemas.care_plan import (
     CarePlanResponse, CarePlanTask, TimelineBucket,
@@ -76,7 +76,7 @@ async def generate_care_plan(case_id: int, extraction: ExtractionResult) -> Care
 
     return CarePlanResponse(
         case_id=case_id,
-        generated_at=datetime.utcnow(),
+        generated_at=datetime.now(timezone.utc),
         timeline=timeline,
         medications_schedule=med_schedule,
         follow_up_reminders=reminders,

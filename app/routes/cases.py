@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_current_user
 from app.db.database import get_db
+from app.db.models.user import User
 from app.schemas.case import (
     PatientCaseCreate, PatientCaseResponse, PatientCaseSummary, PatientCaseUpdate,
 )
@@ -11,7 +13,11 @@ router = APIRouter(prefix="/cases", tags=["cases"])
 
 
 @router.post("", response_model=PatientCaseResponse, status_code=201)
-def create(body: PatientCaseCreate, db: Session = Depends(get_db)):
+def create(
+    body: PatientCaseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Nurse creates a new intake case."""
     case = create_case(
         db,
@@ -24,8 +30,11 @@ def create(body: PatientCaseCreate, db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=list[PatientCaseSummary])
-def list_cases(db: Session = Depends(get_db)):
-    """Case list page — returns lightweight summaries."""
+def list_cases(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Case list — returns lightweight summaries."""
     cases = get_all_cases(db)
     summaries = []
     for case in cases:
@@ -43,14 +52,24 @@ def list_cases(db: Session = Depends(get_db)):
 
 
 @router.get("/{case_id}", response_model=PatientCaseResponse)
-def get(case_id: int, db: Session = Depends(get_db)):
-    """Single case detail page."""
+def get(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Single case detail."""
     return get_case(db, case_id)
 
 
 @router.patch("/{case_id}", response_model=PatientCaseResponse)
-def update(case_id: int, body: PatientCaseUpdate, db: Session = Depends(get_db)):
-    """Update case fields."""
+def update(
+    case_id: int,
+    body: PatientCaseUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update editable case fields (name, age, hospital, discharge date).
+    Status transitions must go through the proper flow endpoints."""
     case = get_case(db, case_id)
     updates = body.model_dump(exclude_unset=True)
     if updates:

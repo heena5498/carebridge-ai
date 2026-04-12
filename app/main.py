@@ -1,7 +1,12 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes import auth, cases, documents, extraction, review, care_plan
+from app.core.config import settings
+
+log = logging.getLogger(__name__)
 
 app = FastAPI(title="CareBridge API", version="0.1.0")
 
@@ -25,7 +30,21 @@ app.include_router(extraction.router)
 app.include_router(review.router)
 app.include_router(care_plan.router)
 
-#heeelo
+
+@app.on_event("startup")
+def validate_config() -> None:
+    """Warn loudly at startup if critical config values are missing or insecure."""
+    if not settings.database_url:
+        raise RuntimeError("DATABASE_URL is not configured. Set it in .env.")
+    if not settings.gemini_api_key:
+        log.warning("GEMINI_API_KEY is not set — extraction endpoints will fail.")
+    if settings.secret_key == "change_me_to_a_long_random_string":
+        log.warning(
+            "SECRET_KEY is using the insecure default value. "
+            "Set a strong random key in .env before deploying."
+        )
+
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}

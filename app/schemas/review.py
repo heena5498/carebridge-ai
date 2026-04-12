@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from enum import Enum
-from app.schemas.extraction import ExtractionResult
+from app.schemas.extraction import ExtractionResult, MedicationItem, FollowUpItem, RiskItem
 
 
 class FieldStatus(str, Enum):
@@ -36,7 +36,7 @@ class NurseReviewPayload(BaseModel):
 # What the nurse sends back when editing the review
 class ReviewUpdate(BaseModel):
     allergies: list[str] | None = None
-    medications: list[dict] | None = None  # partial updates
-    follow_ups: list[dict] | None = None
-    risks: list[dict] | None = None
+    medications: list[MedicationItem] | None = None
+    follow_ups: list[FollowUpItem] | None = None
+    risks: list[RiskItem] | None = None
     nurse_notes: str | None = None

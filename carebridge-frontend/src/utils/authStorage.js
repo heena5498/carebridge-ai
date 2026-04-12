@@ -1,9 +1,9 @@
-const TOKEN_KEY = "carebridge_access_token";
+const TOKEN_KEY = "carebridge_token";
 const USER_KEY = "carebridge_user";
 
-export function saveAuth(authData) {
-  localStorage.setItem(TOKEN_KEY, authData.access_token);
-  localStorage.setItem(USER_KEY, JSON.stringify(authData.user));
+export function saveAuth(data) {
+  localStorage.setItem(TOKEN_KEY, data.access_token);
+  localStorage.setItem(USER_KEY, JSON.stringify(data.user));
 }
 
 export function getToken() {
@@ -21,5 +21,5 @@ export function clearAuth() {
 }
 
 export function isAuthenticated() {
-  return Boolean(getToken());
+  return !!getToken();
 }

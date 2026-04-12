@@ -46,13 +46,12 @@ class PatientCaseSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Optional update payload
+# Optional update payload — status intentionally excluded; use flow endpoints to advance state
 class PatientCaseUpdate(BaseModel):
     patient_name: str | None = None
     age: int | None = None
     source_hospital: str | None = None
     discharge_date: date | None = None
-    status: CaseStatus | None = None
 
 
 # Document metadata after upload

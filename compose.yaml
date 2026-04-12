@@ -39,6 +39,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       SECRET_KEY: ${SECRET_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GOOGLE_GENAI_USE_VERTEXAI: ${GOOGLE_GENAI_USE_VERTEXAI:-FALSE}
     depends_on:
       - db
     volumes:
@@ -49,7 +51,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend/carebridge-facility
+      context: ./carebridge-frontend
       dockerfile: Dockerfile
     container_name: carebridge_frontend
     restart: unless-stopped
