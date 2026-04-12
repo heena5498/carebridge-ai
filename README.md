@@ -1,4 +1,4 @@
-# CareBridge AI
+# CareBridge AI — v1.1.0
 
 CareBridge AI is a care-transition workspace for elderly discharge patients. The backend ingests discharge documents, extracts structured case data, runs validation checks, and supports nurse review plus care-plan generation. The repository also includes a facility-facing React app and a patient-facing React app.
 
@@ -107,6 +107,11 @@ Useful endpoints while testing locally:
 - `POST /cases/{case_id}/approve`
 - `POST /cases/{case_id}/care-plan/generate`
 - `GET /cases/{case_id}/care-plan`
+
+### Chat (facility assistant)
+
+- `POST /chat/facility`
+- `DELETE /chat/facility/{session_id}`
 
 ## Project Structure
 
