@@ -3,10 +3,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY frontend/carebridge-facility/package*.json ./
 RUN npm install
 
-COPY . .
+COPY frontend/carebridge-facility/ .
 RUN npm run build
 
 # Stage 2: Serve built files with nginx

@@ -26,8 +26,8 @@ export async function createCase(payload) {
 export async function uploadDocument(caseId, file) {
   const form = new FormData();
   form.append("file", file);
-  const response = await axios.post(
-    `${API_BASE_URL}/cases/${caseId}/documents`,
+  const response = await apiClient.post(
+    `/cases/${caseId}/documents`,
     form,
     { headers: { "Content-Type": "multipart/form-data" } }
   );
